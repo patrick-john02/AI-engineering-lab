@@ -1,6 +1,7 @@
 import httpx, asyncio, json
 from typing import Any, List, Dict
 from dotenv import load_dotenv
+from pydantic import BaseModel
 import logfire
 import os
 
@@ -9,8 +10,36 @@ logfire.configure()
 
 JSONPLACEHOLDER_URL = os.getenv("JSONPLACEHOLDER_URL", "https://jsonplaceholder.typicode.com")
 
+class Geo(BaseModel):
+    lat: float
+    lng: float
+
+class Address(BaseModel):
+    street: str
+    suite: str
+    city: str
+    zipcode: str
+    geo: Geo
+    
+class Company(BaseModel):
+    name: str
+    catchPhrase: str
+    bs: str
+
+class User(BaseModel):
+    id: int
+    name: str
+    username: str
+    email: str
+    address: Address
+    phone: str
+    website: str
+    company: Company
+    
+
+
 #searches records using dynamic query parameters
-async def search_user_records(**query_params:Any) -> List[Dict[str,Any]]:
+async def search_user_records(**query_params:Any) -> List[User]:
     if not query_params:
         logfire.warn("No search parameters provided.")
         
@@ -23,10 +52,12 @@ async def search_user_records(**query_params:Any) -> List[Dict[str,Any]]:
             )
             response.raise_for_status()
             
-            users = response.json()
-            logfire.info(f"Retrieved {len(users)} user(s) matching criteria: {query_params}")
+            raw_users = response.json()
             
-            return users
+            validated_users = [User(**user_dict) for user_dict in raw_users]
+            logfire.info(f"Retrieved {len(validated_users)}")
+            
+            return validated_users
         
         
         except httpx.HTTPStatusError as exc:
@@ -40,7 +71,12 @@ async def search_user_records(**query_params:Any) -> List[Dict[str,Any]]:
 if __name__ == "__main__":
     users = asyncio.run(search_user_records(username="Bret"))
     if users:
-        bret_data = users[0]
+        target_user = users[0]
         
-        print(json.dumps(bret_data, indent=4))
-    print(f"Found user: {users[0].get('name') if users else 'None'}")
+        print(f"Name: {target_user.name}")
+        print(f"Company Name: {target_user.company.name}")
+        
+        print(f"Latitude (as Float): {target_user.address.geo.lat}")
+        print(f"Latitude Type: {type(target_user.address.geo.lat)}")
+    else:
+        print("User not found.")
