@@ -28,8 +28,8 @@ class User(BaseModel):
     website: str
     company: Company
     
-#TODOS
-class Todos(BaseModel):
+# TODO: Renamed from Todos to Todo for industry standard naming conventions
+class Todo(BaseModel):
     userId: int
     id: int
     title: str
