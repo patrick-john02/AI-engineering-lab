@@ -6,8 +6,10 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.136.3",
+    "fastembed>=0.8.0",
     "google-genai>=2.6.0",
     "langgraph>=1.2.2",
     "logfire>=4.34.0",
     "pydantic-ai>=1.103.0",
+    "qdrant-client>=1.18.0",
 ]

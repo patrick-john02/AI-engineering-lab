@@ -22,12 +22,11 @@ _embedding_model: Optional[TextEmbedding] = None
 def get_qdrant_client() -> AsyncQdrantClient:
     global _qdrant_client
     if _qdrant_client is None:
-        _qdrant_clientgg = AsyncQdrantClient(
+        _qdrant_client = AsyncQdrantClient(
             url=QDRANT_URL,
             api_key=QDRANT_API_KEY,
         )
-        
-        return _qdrant_client
+    return _qdrant_client
 
 #initializes qdrant collection if it does not exist
 def get_embedding_model() -> TextEmbedding:
@@ -35,6 +34,11 @@ def get_embedding_model() -> TextEmbedding:
     if _embedding_model is None:
         _embedding_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
     return _embedding_model
+
+async def generate_embedding(text: str) -> List[float]:
+    model = get_embedding_model()
+    embeddings = list(model.embed([text]))
+    return embeddings[0].tolist()
 
 async def init_collection()->None:
     client = get_qdrant_client()
@@ -47,7 +51,7 @@ async def init_collection()->None:
                 vectors_config=VectorParams(size=384, distance=Distance.COSINE),
             )
             
-        logfire.info(f"Created new Qdrant collection: {QDRANT_COLLECTION_NAME}")
+            logfire.info(f"Created new Qdrant collection: {QDRANT_COLLECTION_NAME}")
     except Exception as e:
         logfire.error(f"Failed to initialize qdrant collection: {str(e)}")
         
@@ -64,7 +68,8 @@ async def qdrant_search(query:str, limit: int =5) -> List[Dict[str, Any]]:
         )
         
         results = [hit.payload for hit in search_result if hit.payload is not None]
-        logfire.info(f"Qdrant search failed: {query} returns {len(results)} results")
+        logfire.info(f"Qdrant search successful: {query} returns {len(results)} results")
+        return results
         
     except Exception as e:
         logfire.error(f'qdrant search failed: {str(e)}')

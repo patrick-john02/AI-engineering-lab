@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 # Initialize the FastAPI application with metadata
 app = FastAPI(
     title="RAG Engineering Lab",
-    description="An industry-standard chatbot integration using Pydantic AI and FastAPI.",
+    description="Chat bot using different public endpoints.",
     version="1.0.0",
     lifespan=lifespan
 )

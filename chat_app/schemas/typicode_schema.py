@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
 
-#typicode api's
 class Geo(BaseModel):
     lat: float
     lng: float
@@ -28,15 +27,12 @@ class User(BaseModel):
     website: str
     company: Company
     
-# TODO: Renamed from Todos to Todo for industry standard naming conventions
 class Todo(BaseModel):
     userId: int
     id: int
     title: str
     completed: bool
     
-    
-#POST
 class Post(BaseModel):
     userId: int
     id: int
