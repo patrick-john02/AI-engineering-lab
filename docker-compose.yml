@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333" # for API
+      # - "6334:6334" # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  app:
+    build: .
+    depends_on:
+      - qdrant
+    env_file:
+      - .env 
+    environment:
+      - QDRANT_URL=http://qdrant:6333
+    ports:
+      - "8000:8000"
+
+volumes:
+  qdrant_data:

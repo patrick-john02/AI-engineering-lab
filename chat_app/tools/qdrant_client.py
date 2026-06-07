@@ -1,4 +1,6 @@
 import os
+import asyncio
+from rich import print as rprint
 from typing import List, Optional, Dict, Any
 from qdrant_client import AsyncQdrantClient
 from fastembed import TextEmbedding
@@ -12,19 +14,20 @@ load_dotenv()
 logfire.configure()
 
 QDRANT_URL = os.getenv('QDRANT_URL', 'http://localhost:6333')
-QDRANT_API_KEY = os.getenv('QDRANT_API_KEY')
+# QDRANT_API_KEY = os.getenv('QDRANT_API_KEY')
 QDRANT_COLLECTION_NAME = os.getenv('QDRANT_COLLECTION_NAME')
 
 #Singletons for connection pooling and memory efficient
 _qdrant_client: Optional[AsyncQdrantClient] = None
 _embedding_model: Optional[TextEmbedding] = None
 
+
 def get_qdrant_client() -> AsyncQdrantClient:
     global _qdrant_client
     if _qdrant_client is None:
         _qdrant_client = AsyncQdrantClient(
             url=QDRANT_URL,
-            api_key=QDRANT_API_KEY,
+            # api_key=QDRANT_API_KEY,
         )
     return _qdrant_client
 
@@ -35,10 +38,14 @@ def get_embedding_model() -> TextEmbedding:
         _embedding_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
     return _embedding_model
 
+
+
 async def generate_embedding(text: str) -> List[float]:
     model = get_embedding_model()
     embeddings = list(model.embed([text]))
     return embeddings[0].tolist()
+
+
 
 async def init_collection()->None:
     client = get_qdrant_client()
@@ -75,5 +82,7 @@ async def qdrant_search(query:str, limit: int =5) -> List[Dict[str, Any]]:
         logfire.error(f'qdrant search failed: {str(e)}')
         return []
     
-    
-    
+
+if __name__ == "__main__":
+    get_embed = asyncio.run(get_embedding_model())
+    rprint(get_embed)

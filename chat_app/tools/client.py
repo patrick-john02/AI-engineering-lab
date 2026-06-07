@@ -2,9 +2,12 @@ import httpx
 from typing import Any, List, Optional
 from pydantic import TypeAdapter
 from chat_app.schemas.typicode_schema import User, Todo, Post
+from rich import print as rprint
+import asyncio
 import logfire
 import os
 
+logfire.configure()
 
 JSONPLACEHOLDER_URL = os.getenv("JSONPLACEHOLDER_URL", "https://jsonplaceholder.typicode.com")
 
@@ -15,7 +18,7 @@ _http_client: Optional[httpx.AsyncClient] = None
 #Returns a AsyncClient instance.
 def get_client() -> httpx.AsyncClient:
 
-    global _http_client
+    global _http_client 
     if _http_client is None:
         _http_client = httpx.AsyncClient(timeout=10.0)
     return _http_client
@@ -72,3 +75,12 @@ async def fetch_posts(**params: Any) -> List[Post]:
     except Exception as e:
         logfire.error(f"Failed to fetch posts: {str(e)}")
         return []
+
+
+
+# if __name__ == '__main__':
+    # users = asyncio.run(fetch_users())
+    # todo = asyncio.run(fetch_todos())
+    # post = asyncio.run(fetch_posts())
+    
+    # rprint(todo)
