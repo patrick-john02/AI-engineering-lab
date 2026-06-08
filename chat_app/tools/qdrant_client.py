@@ -83,6 +83,6 @@ async def qdrant_search(query:str, limit: int =5) -> List[Dict[str, Any]]:
         return []
     
 
-if __name__ == "__main__":
-    get_embed = asyncio.run(get_embedding_model())
-    rprint(get_embed)
+# if __name__ == "__main__":
+#     get_embed = asyncio.run(get_embedding_model())
+#     rprint(get_embed)

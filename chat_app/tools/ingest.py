@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from rich import print as rprint
 from typing import Union, List
 from qdrant_client.models import PointStruct
 
@@ -25,7 +26,7 @@ def transform_to_text(item: Union[User, Todo, Post]) -> str:
         status = "Completed" if item.completed else "Pending"
         return(
             f"Task: {item.title}"
-            f"Status: {item.status}"
+            f"Status: {item.completed}"
         )
 
     
@@ -88,3 +89,6 @@ async def run_ingestion():
 
 
 
+if __name__ == '__main__':
+    ingest = asyncio.run(run_ingestion())
+    rprint(ingest)
