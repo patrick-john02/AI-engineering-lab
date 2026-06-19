@@ -15,3 +15,5 @@ docker compose run --rm app uv run python -m chat_app.tools.ingest
 
 run/test it by file
 - uv run python -m chat_app.tools.client
+
+**search_agent.py
