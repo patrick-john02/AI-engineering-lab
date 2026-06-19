@@ -16,4 +16,6 @@ docker compose run --rm app uv run python -m chat_app.tools.ingest
 run/test it by file
 - uv run python -m chat_app.tools.client
 
+we will be using qwen2.5:3b for now
+
 **search_agent.py
