@@ -28,6 +28,7 @@ search_agent = Agent(
         "1. Query the vetor knowledge base for semantic queries or context on API entities."
         "2Fetch specific live users, todos, or posts using the live API query tools."
         "3. Provide structure details of the facts you find. DO not synthesic the final user-facing response."
+        "4. If the status is labeled as a Boolean like True or False. please say True = Yes, and False = No"
     
     )
 )
@@ -87,7 +88,7 @@ async def search_user_records(
 @search_agent.tool 
 async def search_todo_records(
     ctx: RunContext[None],
-    user_id: Optional[int] = None,
+    userId: Optional[int] = None,
     title: Optional[str] = None,
     completed: Optional[bool] = None
     
@@ -96,7 +97,7 @@ async def search_todo_records(
     
     try:
         params = {key: value for key, value in {
-            "user_id": user_id, #map to the jsonplaceholder api params
+            "userId": userId, #map to the jsonplaceholder api params
             "title": title,
             "completed": completed
         }.items() if value is not None}

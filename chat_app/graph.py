@@ -14,10 +14,12 @@ class AgentState(TypedDict):
 
 #node 1
 async def supervisor_node(state: AgentState):
-    user_message = state["messages"][-1].content
+    # user_message = state["messages"][-1].content
+    user_messages = [msg for msg in state["messages"] if isinstance(msg, HumanMessage)]
+    user_message = user_messages[-1].content if user_messages else ""
     result = await supervisor_agent.run(user_message)
     decision = result.output.strip().lower()
-    destination = "search_agent" if "search_agent" in decision else "firt_agent"
+    destination = "search_agent" if "search_agent" in decision else "first_agent"
     
     return {
         "messages": [AIMessage(content=f"[Supervisor Decision: Route to {destination}]")],
@@ -28,7 +30,9 @@ async def supervisor_node(state: AgentState):
 #node 2
 async def search_node(state: AgentState):
 
-    user_message = state["messages"][-2].content
+    # user_message = state["messages"][-2].content
+    user_messages = [msg for msg in state["messages"] if isinstance(msg, HumanMessage)]
+    user_message = user_messages[-1].content if user_messages else ""
     result = await search_agent.run(user_message)
     
     return {
@@ -40,7 +44,10 @@ async def search_node(state: AgentState):
 async def first_agent_node(state: AgentState):
     # Pass search context to standard chatbot agent to finalize the output
     context = state.get("context", "")
-    user_message = state["messages"][0].content
+    # user_message = state["messages"][0].content
+    
+    user_messages = [msg for msg in state["messages"] if isinstance(msg, HumanMessage)]
+    user_message = user_messages[-1].content if user_messages else ""
     
     prompt = f"Context from database/APIs:\n{context}\n\nUser Question: {user_message}"
     result = await first_agent.run(prompt)
