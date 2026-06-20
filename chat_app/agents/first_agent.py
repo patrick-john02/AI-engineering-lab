@@ -2,12 +2,14 @@ from pydantic_ai.models.ollama import OllamaModel
 from pydantic_ai.providers.ollama import OllamaProvider
 from pydantic_ai import Agent
 
+from chat_app.config import settings
+
 
 # Configuration is now handled in the main entry point to follow the singleton pattern
 model = OllamaModel(
-    'qwen2.5:3b',
+    settings.default_model,
     provider=OllamaProvider(
-        base_url='http://localhost:11434/v1',
+        base_url=settings.ollama_base_url
     ),
 )
 

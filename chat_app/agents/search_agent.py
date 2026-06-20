@@ -1,11 +1,11 @@
 from pydantic_ai.models.ollama import OllamaModel
 from pydantic_ai.providers.ollama import OllamaProvider
 from pydantic_ai import Agent, RunContext
-from chat_app.config import settings
 from typing import Optional
 import logfire
 
 from chat_app.tools.vector_store import qdrant_search
+from chat_app.config import settings
 from chat_app.tools.client import (
     fetch_users as api_fetch_users, 
     fetch_todos as api_fetch_todos, 
@@ -25,10 +25,13 @@ search_agent = Agent(
         "your task is to fetch relevant records, search the knowledge base, and retrieve raw usert/todo/post details"
         "based only on the tools provided to you."
         "you GUIDELINES: \n"
-        "1. Query the vetor knowledge base for semantic queries or context on API entities."
-        "2Fetch specific live users, todos, or posts using the live API query tools."
-        "3. Provide structure details of the facts you find. DO not synthesic the final user-facing response."
-        "4. If the status is labeled as a Boolean like True or False. please say True = Yes, and False = No"
+        "1. If a query requires multiple steps (e.g., finding a username to get their ID, then using that ID to find their todos), "
+        "you MUST call the first tool (e.g., search_user_records), wait for the tool output, extract the ID, and then "
+        "immediately call the next tool (e.g., search_todo_records) with that ID. Do not stop until all necessary tools have been called.\n"
+        "2. Query the vector knowledge base for semantic queries or context on API entities.\n"
+        "3. Fetch specific live users, todos, or posts using the live API query tools.\n"
+        "4. Provide structured details of the facts you find. Do not synthesize the final user-facing response.\n"
+        "5. If the status is labeled as a Boolean like True or False, please output True = Yes, and False = No."
     
     )
 )
@@ -122,11 +125,13 @@ async def search_todo_records(
 @search_agent.tool
 async def search_post_records(
     ctx: RunContext[None],
+    userId: Optional[int] = None,
     title: Optional[str] = None,
     body: Optional[str] = None
 )->str:
     try:
         params = {key: value for key, value in{
+            "userId": userId,
             "title" : title,
             "body": body,
         }.items() if value is not None}

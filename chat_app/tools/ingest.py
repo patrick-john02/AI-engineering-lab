@@ -28,7 +28,7 @@ def transform_to_text(item: Union[User, Todo, Post]) -> str:
         status = "Completed" if item.completed else "Pending"
         return(
             f"Task: {item.title}"
-            f"Status: {status.completed}"
+            f"Status: {status}"
         )
 
     

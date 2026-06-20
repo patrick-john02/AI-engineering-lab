@@ -12,6 +12,7 @@ logfire.configure()
 JSONPLACEHOLDER_URL = os.getenv("JSONPLACEHOLDER_URL", "https://jsonplaceholder.typicode.com")
 
 
+
 _http_client: Optional[httpx.AsyncClient] = None
 
 #Returns a AsyncClient instance.

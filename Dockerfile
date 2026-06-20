@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
@@ -23,4 +23,5 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY . .
 
 #run using uvicorn
-CMD ["uvicorn", "chat_app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "chat_app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

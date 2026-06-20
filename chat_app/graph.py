@@ -8,18 +8,38 @@ from chat_app.agents.supervisor_agent import supervisor_agent
 from chat_app.agents.search_agent import search_agent
 from chat_app.agents.first_agent import first_agent
 
+from pydantic_ai.messages import ModelMessage, ModelRequest, UserPromptPart, ModelResponse, TextPart
+
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
     context: str 
+    
+
+#this will convert langgraph message into pydantic ai messages
+def getpydantic_ai_history(state:AgentState)->list[ModelMessage]:
+    history = []
+    message_to_convert = state["messages"][:-1]
+    for msg in message_to_convert:
+        if isinstance(msg, HumanMessage):
+            history.append(ModelRequest(parts=[UserPromptPart(content=msg.content)]))
+        elif isinstance(msg, AIMessage):
+            if msg.content.startswith("[Supervisor Decision:") or msg.content == "search result retrieved sucessfully":
+                continue
+            history.append(ModelResponse(parts=[TextPart(content=msg.content)]))
+    return history 
+    
 
 #node 1
 async def supervisor_node(state: AgentState):
     # user_message = state["messages"][-1].content
     user_messages = [msg for msg in state["messages"] if isinstance(msg, HumanMessage)]
     user_message = user_messages[-1].content if user_messages else ""
-    result = await supervisor_agent.run(user_message)
+    
+    history = getpydantic_ai_history(state)
+    result = await supervisor_agent.run(user_message, message_history=history)
     decision = result.output.strip().lower()
-    destination = "search_agent" if "search_agent" in decision else "first_agent"
+    # destination = "search_agent" if "search_agent" in decision else "first_agent"
+    destination = "search_agent" if "search" in decision else "first_agent"
     
     return {
         "messages": [AIMessage(content=f"[Supervisor Decision: Route to {destination}]")],
@@ -33,7 +53,9 @@ async def search_node(state: AgentState):
     # user_message = state["messages"][-2].content
     user_messages = [msg for msg in state["messages"] if isinstance(msg, HumanMessage)]
     user_message = user_messages[-1].content if user_messages else ""
-    result = await search_agent.run(user_message)
+    
+    history = getpydantic_ai_history(state)
+    result = await search_agent.run(user_message, message_history=history)
     
     return {
         "messages": [AIMessage(content="Search Results retrieved successfully.")],
@@ -50,11 +72,15 @@ async def first_agent_node(state: AgentState):
     user_message = user_messages[-1].content if user_messages else ""
     
     prompt = f"Context from database/APIs:\n{context}\n\nUser Question: {user_message}"
-    result = await first_agent.run(prompt)
+    
+    history = getpydantic_ai_history(state)
+    result = await first_agent.run(prompt, message_history=history)
+    
     
     return {
         "messages": [AIMessage(content=result.output)]
     }
+    
 
 
 #conditional routing based on the supervisor agent decision
