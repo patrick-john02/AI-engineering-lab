@@ -1,21 +1,29 @@
-**This is my playground practice for building orchestration and pipeling for Agentic RAG using public API'S**
+Run and Test Instructions
 
-Docker Setup:
-Open the Docker Desktop
+Follow these steps to run and test the complete pipeline:
 
-run this 
+1.Start Qdrant:
+
 docker compose up -d qdrant
-then start the container
 
-if success open this link 
-http://localhost:6333/dashboard
 
-then lets start ingesting the api's
-docker compose run --rm app uv run python -m chat_app.tools.ingest
+2.Ingest API Entities into Qdrant
+Run the ingestion script to fetch users, todos, and posts from the API, embed them, and index them in Qdrant:
 
-run/test it by file
-- uv run python -m chat_app.tools.client
+uv run python -m chat_app.tools.ingest
 
-we will be using qwen2.5:3b for now
+3. run ollama
 
-**search_agent.py
+if already installed 
+ollama run qwen2.5:3b or 7b (change the model on the code if ever you choose 7b)
+
+
+3. Run the FastAPI App Server
+Start the API backend at port 8000:
+
+uv run uvicorn main:app --reload --port 8000
+
+
+4. testing
+
+uv run python -m chat_app.client_test

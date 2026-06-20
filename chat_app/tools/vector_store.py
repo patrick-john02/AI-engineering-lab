@@ -19,7 +19,7 @@ def get_embedding_model() -> TextEmbedding:
 
 async def generate_embedding(text:str)->List[float]:
     model = get_embedding_model()
-    embeddings = List(model.embed([text]))
+    embeddings = list(model.embed([text]))
     return embeddings[0].tolist()
 
 
@@ -29,7 +29,7 @@ async def init_collection()->None:
     collection_name = settings.qdrant_collection_name
     
     try:
-        exists = await client.collection_exists()
+        exists = await client.collection_exists(collection_name=collection_name)
         if not exists:
             await client.create_collection(
                 collection_name=collection_name,
@@ -41,7 +41,7 @@ async def init_collection()->None:
             logfire.error(f"qdrant collection: {collection_name} already exists")
             
     except Exception as e:
-        logfire.error(f"Faield to initialize {str(e)}")
+        logfire.error(f"Failed to initialize {str(e)}")
         raise e
     
 async def qdrant_search(query: str, limit: int =5) -> List[Dict[str, Any]]:
@@ -55,16 +55,16 @@ async def qdrant_search(query: str, limit: int =5) -> List[Dict[str, Any]]:
             limit=limit,
         )
         results = [hit.payload for hit in search_result if hit.payload is not None]
-        logfire.info(f"Qdrant search successfull: {query} return {len(results)} matches")
+        logfire.info(f"Qdrant search successful: {query} return {len(results)} matches")
         return results
     
     except Exception as e:
-        logfire.error(f"qdrant search faield {str(e)}")
+        logfire.error(f"qdrant search failed {str(e)}")
         
         return []
     
     
-async def upset_documents(points: List[PointStruct]) -> None:
+async def upsert_documents(points: List[PointStruct]) -> None:
     client = get_qdrant_client()
     collection_name = settings.qdrant_collection_name
     
@@ -74,9 +74,7 @@ async def upset_documents(points: List[PointStruct]) -> None:
             points=points
         )
         
-        logfire.info(f"Scuessfully upserted {len(points)} and {collection_name}")
+        logfire.info(f"Successfully upserted {len(points)} to {collection_name}")
         
     except Exception as e:
-        logfire.error(f"Faield to upset points into qdrant {str(e)}")
-        
-        
+        logfire.error(f"Failed to upsert points into qdrant {str(e)}")

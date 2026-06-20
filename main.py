@@ -1,22 +1,23 @@
 from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
+from langchain_core.messages import HumanMessage
 import logfire
 from dotenv import load_dotenv
 from chat_app.agents.first_agent import first_agent
 from chat_app.tools.client import close_client
+from chat_app.graph import graph
 
-# Industry standard: Centralize configuration at the application entry point
 load_dotenv()
 logfire.configure()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
-    # Correctly instrument FastAPI with logfire
+    # instrument FastAPI with logfire
     logfire.instrument_fastapi(app)
     yield
-    # Clean up resources on shutdown
+
     await close_client()
 
 # Initialize the FastAPI application with metadata
@@ -29,6 +30,7 @@ app = FastAPI(
 
 class ChatRequest(BaseModel):
     prompt: str
+    session_id: str = "default_session"
 
 class ChatResponse(BaseModel):
     response: str
@@ -40,12 +42,25 @@ async def root():
 
 @app.post('/chat', response_model=ChatResponse)
 async def chat(request: ChatRequest):
+    
 
     try:
-        # Execute the agent synchronously for the simple REST endpoint
-        # For long-running tasks, consider using the streaming interface
-        result = await first_agent.run(request.prompt)
-        return ChatResponse(response=result.data)
+        # result = await first_agent.run(request.prompt)
+        # return ChatResponse(response=result.data)
+        
+        initial_state = {
+            "messages" : [HumanMessage(content=request.prompt)],
+            "context": ""
+        }
+        
+        config = {"configurable": {"thread_id": request.session_id}}
+        final_state = await graph.ainvoke(initial_state, config=config)
+        
+        
+        final_response = final_state["messages"][-1].content
+        return ChatResponse(response=final_response)
+    
+    
     except Exception as e:
         logfire.error(f"Chat request failed: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error occurred while processing your request.")

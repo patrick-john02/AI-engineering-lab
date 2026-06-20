@@ -8,13 +8,12 @@ import logfire
 from chat_app.tools.client import (
     fetch_users, fetch_todos, fetch_posts, close_client
 )
-from chat_app.tools.qdrant_client import(
-    get_qdrant_client, generate_embedding, 
-    init_collection, QDRANT_COLLECTION_NAME
+from chat_app.tools.vector_store import (
+    generate_embedding, init_collection, upsert_documents
 )
 from chat_app.schemas.typicode_schema import User, Todo, Post
-from chat_app.tools.vector_store import upset_documents
-from chat_app.database import close_qdrant_client
+from chat_app.database import get_qdrant_client, close_qdrant_client
+from chat_app.config import settings
 
 #transformation layer: this will convert models to plain text
 def transform_to_text(item: Union[User, Todo, Post]) -> str:
@@ -90,7 +89,7 @@ async def run_ingestion():
     
     if points: 
         rprint(f"uploading {len(points)} points to qdrant")
-        await upset_documents(points)
+        await upsert_documents(points)
         rprint("Ingestion Completed")
     else:
         logfire.warning("No data retrieved to ingest")

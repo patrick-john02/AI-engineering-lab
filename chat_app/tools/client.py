@@ -11,8 +11,7 @@ logfire.configure()
 
 JSONPLACEHOLDER_URL = os.getenv("JSONPLACEHOLDER_URL", "https://jsonplaceholder.typicode.com")
 
-# Use a shared AsyncClient to manage connection pooling and prevent port exhaustion
-# client would be managed via dependency injection or a lifecycle hook
+
 _http_client: Optional[httpx.AsyncClient] = None
 
 #Returns a AsyncClient instance.

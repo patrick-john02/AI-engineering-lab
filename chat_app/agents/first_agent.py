@@ -4,7 +4,7 @@ from pydantic_ai import Agent, RunContext
 from typing import Optional
 import logfire
 
-from chat_app.tools.qdrant_client import(
+from chat_app.tools.vector_store import(
     qdrant_search,
 )
 from chat_app.tools.client import (
@@ -24,6 +24,7 @@ model = OllamaModel(
 first_agent = Agent(
     model,
     system_prompt=(
+        "Introduce yourself if the user ask it"
         "You are a ChatBot assistant for users. "
         "Your task is to generate summaries for Users, Posts, and Todos based ONLY on tool results.\n\n"
         
