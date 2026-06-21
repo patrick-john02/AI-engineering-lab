@@ -41,3 +41,6 @@ first_agent.py: the final responder/summarizer. this will synthesizes the final 
 
 
 NOTE: i unable to use structured output validation which fails on older Ollama versions, so i will use plain text supervisor. soon i will use newer versions to match our graph and routing
+
+
+next feature will be doing a RAG using documents

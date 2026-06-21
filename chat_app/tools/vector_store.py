@@ -49,9 +49,9 @@ async def qdrant_search(query: str, limit: int =5) -> List[Dict[str, Any]]:
     collection_name=settings.qdrant_collection_name
     try:
         query_vector = await generate_embedding(query)
-        search_result = await client.search(
+        search_result = await client.query_points(
             collection_name=collection_name,
-            query_vector=query_vector,
+            query=query_vector,
             limit=limit,
         )
         results = [hit.payload for hit in search_result if hit.payload is not None]

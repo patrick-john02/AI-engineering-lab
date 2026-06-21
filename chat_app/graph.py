@@ -4,6 +4,7 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import HumanMessage, AIMessage
 
+
 from chat_app.agents.supervisor_agent import supervisor_agent
 from chat_app.agents.search_agent import search_agent
 from chat_app.agents.first_agent import first_agent
@@ -18,12 +19,31 @@ class AgentState(TypedDict):
 #this will convert langgraph message into pydantic ai messages
 def getpydantic_ai_history(state:AgentState)->list[ModelMessage]:
     history = []
+    messages = state["messages"]
+    
+    last_human_index = -1
+    for i in range(len(messages) -1, -1, -1):
+        if isinstance(messages[i], HumanMessage):
+            last_human_index = i
+            break
+    
+    if last_human_index <= 0:
+        return history
+        
     message_to_convert = state["messages"][:-1]
+    
     for msg in message_to_convert:
         if isinstance(msg, HumanMessage):
             history.append(ModelRequest(parts=[UserPromptPart(content=msg.content)]))
         elif isinstance(msg, AIMessage):
-            if msg.content.startswith("[Supervisor Decision:") or msg.content == "search result retrieved sucessfully":
+            content_lower = msg.content.lower().strip()
+            
+            
+            # if msg.content.startswith("[Supervisor Decision:") or msg.content == "search result retrieved sucessfully":
+            if(content_lower.startswith("[supervisor decision:") or
+               "search result" in content_lower or 
+               "search_results" in content_lower):
+            
                 continue
             history.append(ModelResponse(parts=[TextPart(content=msg.content)]))
     return history 
