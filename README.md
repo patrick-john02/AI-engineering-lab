@@ -11,6 +11,7 @@ docker compose up -d qdrant
 Run the ingestion script to fetch users, todos, and posts from the API, embed them, and index them in Qdrant:
 
 uv run python -m chat_app.tools.ingest
+then check the qdrant User interface http://localhost:6333/
 
 3. run ollama
 
