@@ -8,7 +8,7 @@ import os
 
 from chat_app.schemas.typicode_schema import User, Todo, Post
 from chat_app.schemas.forcast_schema import (
-    Location
+    Coordinates, Location
 )
 
 logfire.configure()
@@ -43,7 +43,9 @@ TodoListAdapter = TypeAdapter(List[Todo])
 PostListAdapter = TypeAdapter(List[Post])
 
 #forcast adapter
-WeatherListAdapter = TypeAdapter(List[Location])
+WeatherListAdapter = TypeAdapter(List[Coordinates])
+LocationListAdpater = TypeAdapter(List[Location])
+
 
 async def fetch_users(**params: Any) -> List[User]:
 
@@ -86,7 +88,23 @@ async def fetch_posts(**params: Any) -> List[Post]:
         return []
 
 
-#forcast
+
+#for fetching the location
+async def fetch_location(**params:Any)->List[User]:
+    client= get_client()
+    try:
+        response =await client.get(f"{FORECAST_URL}/v1/search?", params=params)
+        response.raise_for_status()
+        validated_data = LocationListAdpater.validate_python(response.json())
+        logfire.info(f"Successfully retrieved {len(validated_data)} location")
+        return validated_data
+    
+    except Exception as e:
+        logfire.error(f"Failed to fetch location: {str(e)}")
+        
+        return []
+
+#for getting the forcast information
 async def fetch_weather(**params:Any)->List[User]:
     
     client = get_client()
@@ -100,6 +118,7 @@ async def fetch_weather(**params:Any)->List[User]:
         logfire.error(f"Failed to fetch weather: {str(e)}")
         return []
     
+
     
     
     

@@ -22,7 +22,7 @@ class CurrentWeatherUnits(BaseModel):
 
 
 
-class Location(BaseModel):
+class Coordinates(BaseModel):
     latitude: float
     longitude: float
     generationtime_ms: float
@@ -32,4 +32,21 @@ class Location(BaseModel):
     elevation: float
     current_weather_units: CurrentWeatherUnits
     current_weather: CurrentWeather
+    
+
+#Location
+class Location(BaseModel):
+    id: int
+    name: str
+    latitude: float
+    longitude: float
+    elevation: float
+    feature_code: str
+    country_code: str
+    timezone: str
+    population: int
+    country: str
+    admin1: str
+    admin2: str
+    admin3: str
     
